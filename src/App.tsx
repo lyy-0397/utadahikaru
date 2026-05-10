@@ -5,7 +5,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform, useSpring, useMotionValue } from 'motion/react';
-import { ChevronDown, ChevronLeft, ChevronRight, Share2, Play, MousePointer2 } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, Share2, Play, MousePointer2, Home, Heart, Calendar, Disc, Music, Info } from 'lucide-react';
 
 import imgAutomatic from './assets/images/AUTOMATIC.jpg';
 import imgBad from './assets/images/BAD.jpg';
@@ -52,6 +52,7 @@ interface Song {
   lyricsCN: string;
   cover: string;
   audioUrl?: string;
+  mvUrl?: string;
 }
 
 interface TimelineNode {
@@ -154,7 +155,8 @@ const SONGS: Song[] = [
     lyrics: "It's automatic そばにいるだけで その目に見つめられるだけで",
     lyricsCN: "只要在你身边，只要被那双眼睛注视，一切便自然而然...",
     cover: imgAutomatic,
-    audioUrl: "https://github.com/chenmanqi750-creator/mymusic/raw/refs/heads/main/automatic.mp3"
+    audioUrl: "https://github.com/chenmanqi750-creator/mymusic/raw/refs/heads/main/automatic.mp3",
+    mvUrl: "https://www.youtube.com/results?search_query=Utada+Hikaru+Automatic+MV"
   },
   {
     name: "First Love",
@@ -164,7 +166,8 @@ const SONGS: Song[] = [
     lyrics: "最後のキスは タバコの flavor がした 苦くてせつない香り",
     lyricsCN: "最后的吻，有着烟草的味道，那是既苦涩又哀切的香气。",
     cover: imgFirstLove,
-    audioUrl: "https://github.com/chenmanqi750-creator/mymusic/raw/refs/heads/main/firstlove.mp3"
+    audioUrl: "https://github.com/chenmanqi750-creator/mymusic/raw/refs/heads/main/firstlove.mp3",
+    mvUrl: "https://www.youtube.com/results?search_query=Utada+Hikaru+First+Love+MV"
   },
   {
     name: "Colors",
@@ -174,7 +177,8 @@ const SONGS: Song[] = [
     lyrics: "青い空が 見えるはずの窓が オレンジ色の 雲に覆われてる",
     lyricsCN: "本该看见青空的窗户，却被橙色的云层所覆盖。",
     cover: imgColor,
-    audioUrl: "https://github.com/chenmanqi750-creator/mymusic/raw/refs/heads/main/colors.mp3"
+    audioUrl: "https://github.com/chenmanqi750-creator/mymusic/raw/refs/heads/main/colors.mp3",
+    mvUrl: "https://www.youtube.com/results?search_query=Utada+Hikaru+Colors+MV"
   },
   {
     name: "花束を君に",
@@ -184,7 +188,8 @@ const SONGS: Song[] = [
     lyrics: "普段からメイクしない君の 薄い化粧した顔を忘れないよ",
     lyricsCN: "平时从不化妆的你，那略施薄粉的脸庞，我永远不会忘记。",
     cover: imgFantome,
-    audioUrl: "https://github.com/chenmanqi750-creator/mymusic/raw/refs/heads/main/HUASHU.mp3"
+    audioUrl: "https://github.com/chenmanqi750-creator/mymusic/raw/refs/heads/main/HUASHU.mp3",
+    mvUrl: "https://www.youtube.com/results?search_query=Utada+Hikaru+花束を君に+MV"
   },
   {
     name: "One Last Kiss",
@@ -194,7 +199,8 @@ const SONGS: Song[] = [
     lyrics: "忘れたくないこと 忘れられないこと 誰だってあるはず",
     lyricsCN: "不想忘记的事，无法忘记的事，任谁都应该拥有的吧。",
     cover: imgKiss,
-    audioUrl: "https://github.com/chenmanqi750-creator/mymusic/raw/refs/heads/main/onelastkiss.mp3"
+    audioUrl: "https://github.com/chenmanqi750-creator/mymusic/raw/refs/heads/main/onelastkiss.mp3",
+    mvUrl: "https://www.youtube.com/results?search_query=Utada+Hikaru+One+Last+Kiss+MV"
   },
   {
     name: "BAD MODE",
@@ -204,7 +210,8 @@ const SONGS: Song[] = [
     lyrics: "エンドロールまで 終わらないで 終わらないで",
     lyricsCN: "在片尾演职员名单出来前，请不要结束，不要结束。",
     cover: imgBad,
-    audioUrl: "https://github.com/chenmanqi750-creator/mymusic/raw/refs/heads/main/badmode.mp3"
+    audioUrl: "https://github.com/chenmanqi750-creator/mymusic/raw/refs/heads/main/badmode.mp3",
+    mvUrl: "https://www.youtube.com/results?search_query=Utada+Hikaru+BAD+MODE+MV"
   }
 ];
 
@@ -233,9 +240,9 @@ const RainOverlay = () => {
         <motion.div
           key={i}
           initial={{ y: -20, opacity: 0 }}
-          animate={{ 
-            y: ['0vh', '120vh'], 
-            opacity: [0, 0.4, 0] 
+          animate={{
+            y: ['0vh', '120vh'],
+            opacity: [0, 0.4, 0]
           }}
           transition={{
             duration: Math.random() * 1 + 0.5,
@@ -244,9 +251,74 @@ const RainOverlay = () => {
             ease: "linear"
           }}
           className="absolute w-[1px] bg-sky-blue/30"
-          style={{ 
+          style={{
             height: Math.random() * 20 + 10 + 'px',
-            left: Math.random() * 100 + '%' 
+            left: Math.random() * 100 + '%'
+          }}
+        />
+      ))}
+    </div>
+  );
+};
+
+/**
+ * 点击涟漪特效组件
+ */
+const ClickRipple = () => {
+  const [ripples, setRipples] = useState<Array<{ id: number; x: number; y: number; timestamp: number }>>([]);
+  const rippleIdRef = useRef(0);
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      const heroSection = document.getElementById('hero');
+      if (!heroSection) return;
+
+      const rect = heroSection.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      // 只在首页区域内创建涟漪
+      if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
+        const newRipple = {
+          id: rippleIdRef.current++,
+          x,
+          y,
+          timestamp: Date.now()
+        };
+
+        setRipples(prev => [...prev, newRipple]);
+
+        // 2秒后移除涟漪
+        setTimeout(() => {
+          setRipples(prev => prev.filter(ripple => ripple.id !== newRipple.id));
+        }, 2000);
+      }
+    };
+
+    window.addEventListener('click', handleClick);
+    return () => window.removeEventListener('click', handleClick);
+  }, []);
+
+  return (
+    <div className="absolute inset-0 pointer-events-none overflow-hidden z-10">
+      {ripples.map(ripple => (
+        <motion.div
+          key={ripple.id}
+          initial={{ scale: 0, opacity: 0.8 }}
+          animate={{
+            scale: [0, 8],
+            opacity: [0.8, 0]
+          }}
+          transition={{
+            duration: 2,
+            ease: "easeOut"
+          }}
+          className="absolute rounded-full border-2 border-sky-blue/40"
+          style={{
+            left: ripple.x - 50,
+            top: ripple.y - 50,
+            width: 100,
+            height: 100,
           }}
         />
       ))}
@@ -524,10 +596,68 @@ export default function App() {
     <motion.div style={{ backgroundColor: finalBg }} className="transition-colors duration-700 min-h-screen cursor-none">
       <BearCursor />
       <AudioController activeTrack={activeTrack} />
+
+      {/* Navigation Bar */}
+      <motion.nav
+        initial={{ y: -100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.8, delay: 0.2 }}
+        className="fixed top-0 left-0 right-0 z-50 bg-white/10 backdrop-blur-xl border-b border-white/20 shadow-lg"
+      >
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <motion.div
+              className="text-xl font-serif font-bold text-warm-white"
+              whileHover={{ scale: 1.05 }}
+            >
+              宇多田光
+            </motion.div>
+
+            <div className="hidden md:flex items-center space-x-8">
+              {[
+                { id: 'hero', label: '首页', icon: Home },
+                { id: 'emotions', label: '情感光谱', icon: Heart },
+                { id: 'timeline', label: '生命历程', icon: Calendar },
+                { id: 'albums', label: '专辑色卡', icon: Disc },
+                { id: 'songs', label: '歌曲面板', icon: Music },
+                { id: 'footer', label: '关于', icon: Info }
+              ].map(({ id, label, icon: Icon }) => (
+                <motion.button
+                  key={id}
+                  onClick={() => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                  }}
+                  className="flex items-center space-x-2 text-warm-white/80 hover:text-warm-white transition-colors duration-300 group"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Icon size={16} className="group-hover:rotate-12 transition-transform duration-300" />
+                  <span className="text-sm font-medium">{label}</span>
+                </motion.button>
+              ))}
+            </div>
+
+            {/* Mobile Menu Button */}
+            <div className="md:hidden">
+              <motion.button
+                className="text-warm-white p-2"
+                whileTap={{ scale: 0.95 }}
+              >
+                <MousePointer2 size={20} />
+              </motion.button>
+            </div>
+          </div>
+        </div>
+      </motion.nav>
+
       {/* 1. Hero Section */}
-      <section className="relative h-screen flex flex-col items-center justify-center overflow-hidden bg-gradient-to-b from-void to-deep-blue text-warm-white p-6">
+      <section id="hero" className="relative h-screen flex flex-col items-center justify-center overflow-hidden bg-gradient-to-b from-void to-deep-blue text-warm-white p-6 pt-24">
         <RainOverlay />
-        
+        <ClickRipple />
+
         <div className="relative z-10 w-full h-full">
           <FogReveal>
             <div className="text-center px-6">
@@ -562,7 +692,7 @@ export default function App() {
       </section>
 
       {/* 2. Emotional Taxonomy Grid */}
-      <section className="py-24 px-6 md:px-12 max-w-7xl mx-auto">
+      <section id="emotions" className="py-24 px-6 md:px-12 max-w-7xl mx-auto">
         <SectionTitle title="情感的光谱" subtitle="音乐是情绪的化学反应，每一页都是一种色彩。" />
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -648,7 +778,8 @@ export default function App() {
       </section>
 
       {/* 3. Life Timeline - Paginated Version */}
-      <motion.section 
+      <motion.section
+        id="timeline"
         onViewportEnter={() => setTimelineVisible(true)}
         onViewportLeave={() => setTimelineVisible(false)}
         className="py-24 overflow-hidden relative"
@@ -744,7 +875,7 @@ export default function App() {
       </motion.section>
 
       {/* 4. Album Color Cards */}
-      <section className="py-24 px-6 md:px-12 bg-transparent">
+      <section id="albums" className="py-24 px-6 md:px-12 bg-transparent">
         <SectionTitle title="专辑色卡" subtitle="随着滑动，让空气染上旋律的颜色。" />
         
         <div className="flex overflow-x-auto gap-8 pb-12 no-scrollbar px-4 snap-x">
@@ -816,7 +947,8 @@ export default function App() {
       </section>
 
       {/* 5. Represented Song Panel */}
-      <motion.section 
+      <motion.section
+        id="songs"
         className="py-32 px-6 md:px-12 bg-void text-warm-white relative overflow-hidden"
         onViewportEnter={() => setSongPanelVisible(true)}
         onViewportLeave={() => setSongPanelVisible(false)}
@@ -877,7 +1009,16 @@ export default function App() {
              </AnimatePresence>
           </div>
 
-          <div className="w-full md:w-1/2 flex flex-col items-start text-left z-10">
+          <div className="w-full md:w-1/2 flex flex-col items-start text-left z-10 relative">
+            {SONGS[currentSong].mvUrl && (
+              <button
+                onClick={() => window.open(SONGS[currentSong].mvUrl, '_blank', 'noopener')}
+                className="absolute right-0 top-0 flex items-center justify-center p-3 rounded-full border border-white/20 bg-white/10 hover:bg-white/90 hover:text-void transition-colors"
+                aria-label="播放 MV"
+              >
+                <Play size={18} />
+              </button>
+            )}
             <motion.div
                key={currentSong}
                initial={{ opacity: 0, x: 20 }}
@@ -901,7 +1042,7 @@ export default function App() {
                  </p>
                </div>
 
-               <div className="flex gap-4">
+               <div className="flex flex-wrap gap-4">
                  <button 
                   onClick={() => handleScroll('prev')}
                   className="p-4 rounded-full border border-white/20 hover:bg-white hover:text-void transition-colors"
@@ -920,8 +1061,9 @@ export default function App() {
         </div>
       </motion.section>
 
+
       {/* 6. Footer */}
-      <footer className="py-24 px-6 md:px-12 bg-warm-white text-void/40 border-t border-void/5">
+      <footer id="footer" className="py-24 px-6 md:px-12 bg-warm-white text-void/40 border-t border-void/5">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="text-center md:text-left">
             <h4 className="text-2xl font-serif text-void/80 mb-2">宇多田光 Hikaru Utada</h4>
